@@ -1,0 +1,58 @@
+version: '3.3'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    networks:
+      lan:
+        ipv4_address: 192.168.200.10
+      wan:
+        ipv4_address: 192.168.100.10
+    ports:
+      - 8090:80
+    volumes:
+      - ./redis/wp-config.php:/var/www/html/wp-config.php
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: DB_USERNAME
+      WORDPRESS_DB_PASSWORD: DB_PASSWORD
+      WORDPRESS_DB_NAME: DB_NAME
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
+      MYSQL_USER: DB_USERNAME
+      MYSQL_PASSWORD: DB_PASSWORD
+      MYSQL_DATABASE: DB_NAME
+    volumes:
+      - wp-db:/var/lib/mysql
+    networks:
+      lan:
+        ipv4_address: 192.168.200.11
+
+  redis:
+    image: redis
+    container_name: v3_redis_1
+    networks:
+      lan:
+        ipv4_address: 192.168.200.12
+
+
+networks:
+  wan:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.100.0/24
+
+  lan:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.200.0/24
+
+
+volumes:
+  wp-db:
